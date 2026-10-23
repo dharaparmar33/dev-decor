@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://dev-decor.vercel.app/sitemap.xml
+Sitemap: https://dev-decor-beige.vercel.app/sitemap.xml
