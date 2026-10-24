@@ -6,7 +6,6 @@
  *  - Mobile Navigation Drawer
  *  - Sticky Header Enhancements
  *  - Project Gallery Category Filtering
- *  - Interactive Image Lightbox with WhatsApp Lead Generation
  *  - Contact Form to WhatsApp Integration
  *  - Dynamic Copyright Year
  */
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initStickyHeader();
   initScrollReveal();
   initGalleryFiltering();
-  initLightbox();
   initFaqAccordion();
   initContactForm();
   initDynamicYear();
@@ -194,101 +192,6 @@ function initGalleryFiltering() {
   });
 }
 
-/* -------------------------------------------------------------
- * 6. Interactive Image Lightbox
- * ------------------------------------------------------------- */
-function initLightbox() {
-  let modal = document.querySelector('.lightbox-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.className = 'lightbox-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Project Photo View');
-    modal.innerHTML = `
-      <div class="lightbox-content">
-        <button type="button" class="lightbox-close" aria-label="Close dialog">&times;</button>
-        <div class="lightbox-image-wrap">
-          <img src="" alt="" id="lightboxImg">
-        </div>
-        <div class="lightbox-details">
-          <span class="eyebrow" id="lightboxCategory">CATEGORY</span>
-          <h3 id="lightboxTitle">Project Title</h3>
-          <p id="lightboxDesc">Project details and craftsmanship description.</p>
-          <div class="lightbox-actions">
-            <a href="#" target="_blank" rel="noopener" class="btn btn-whatsapp" id="lightboxWhatsappBtn">
-              Enquire on WhatsApp ↗
-            </a>
-            <a href="tel:+919712409158" class="btn btn-outline" id="lightboxCallBtn">
-              Call 9712409158
-            </a>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-
-  const closeBtn = modal.querySelector('.lightbox-close');
-  const lightboxImg = modal.querySelector('#lightboxImg');
-  const lightboxCategory = modal.querySelector('#lightboxCategory');
-  const lightboxTitle = modal.querySelector('#lightboxTitle');
-  const lightboxDesc = modal.querySelector('#lightboxDesc');
-  const lightboxWhatsappBtn = modal.querySelector('#lightboxWhatsappBtn');
-
-  function openLightbox(card) {
-    const img = card.querySelector('img');
-    const titleEl = card.querySelector('.project-card-body h3');
-    const descEl = card.querySelector('.project-card-body p');
-    const badgeEl = card.querySelector('.project-badge');
-
-    if (!img) return;
-
-    const currentLang = document.documentElement.lang === 'hi' ? 'hi' : 'en';
-
-    const titleText = titleEl ? (currentLang === 'hi' && titleEl.dataset.hi ? titleEl.dataset.hi : titleEl.textContent.trim()) : 'DEV DECOR Project';
-    const descText = descEl ? (currentLang === 'hi' && descEl.dataset.hi ? descEl.dataset.hi : descEl.textContent.trim()) : '';
-    const categoryText = badgeEl ? badgeEl.textContent.trim() : 'Interior Design';
-
-    lightboxImg.src = img.src;
-    lightboxImg.alt = img.alt || titleText;
-    lightboxCategory.textContent = categoryText;
-    lightboxTitle.textContent = titleText;
-    lightboxDesc.textContent = descText;
-
-    // Prefill WhatsApp link with exact design title
-    const encodedMsg = encodeURIComponent(`Hello DEV DECOR! I am interested in your project: "${titleText}" (${categoryText}). Could you share more details and estimated pricing?`);
-    lightboxWhatsappBtn.href = `https://wa.me/919712409158?text=${encodedMsg}`;
-
-    modal.classList.add('is-active');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeLightbox() {
-    modal.classList.remove('is-active');
-    document.body.style.overflow = '';
-  }
-
-  closeBtn.addEventListener('click', closeLightbox);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeLightbox();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('is-active')) {
-      closeLightbox();
-    }
-  });
-
-  // Attach click listener to project cards
-  document.querySelectorAll('.project-card-media, .project-card-body h3').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      const card = el.closest('.project-card');
-      if (card) openLightbox(card);
-    });
-  });
-}
 
 /* -------------------------------------------------------------
  * 7. FAQ Accordion
@@ -315,17 +218,274 @@ function initContactForm() {
   const form = document.getElementById('consultationForm');
   if (!form) return;
 
+  // Disable native browser validation tooltips so custom accessible errors display near inputs
+  form.noValidate = true;
+
+  const nameInput = form.querySelector('[name="name"]');
+  const phoneInput = form.querySelector('[name="phone"]');
+  const serviceSelect = form.querySelector('[name="service"]');
+  const locationInput = form.querySelector('[name="location"]');
+  const messageInput = form.querySelector('[name="message"]');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  function getOrCreateErrorEl(inputEl, id) {
+    let errEl = document.getElementById(id);
+    if (!errEl && inputEl && inputEl.parentNode) {
+      errEl = document.createElement('div');
+      errEl.id = id;
+      errEl.className = 'field-error';
+      errEl.setAttribute('role', 'alert');
+      errEl.setAttribute('aria-live', 'polite');
+      errEl.style.display = 'none';
+      errEl.style.color = '#c0392b';
+      errEl.style.fontSize = '0.82rem';
+      errEl.style.marginTop = '6px';
+      errEl.style.fontWeight = '500';
+      inputEl.parentNode.appendChild(errEl);
+      inputEl.setAttribute('aria-describedby', id);
+    }
+    return errEl;
+  }
+
+  const nameError = getOrCreateErrorEl(nameInput, 'nameError');
+  const phoneError = getOrCreateErrorEl(phoneInput, 'phoneError');
+  const serviceError = getOrCreateErrorEl(serviceSelect, 'serviceError');
+
+  let statusEl = document.getElementById('formStatus');
+  if (!statusEl && submitBtn && form) {
+    statusEl = document.createElement('div');
+    statusEl.id = 'formStatus';
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
+    statusEl.style.display = 'none';
+    statusEl.style.marginBottom = '14px';
+    statusEl.style.fontSize = '0.88rem';
+    statusEl.style.padding = '10px 14px';
+    statusEl.style.borderRadius = '4px';
+    statusEl.style.background = '#F1ECE2';
+    statusEl.style.border = '1px solid #B08D57';
+    statusEl.style.color = '#4A3027';
+    form.insertBefore(statusEl, submitBtn);
+  }
+
+  function showError(field, errorEl, enMsg, hiMsg) {
+    if (!field || !errorEl) return;
+    const isHindi = document.documentElement.lang === 'hi';
+    errorEl.setAttribute('data-en', enMsg);
+    errorEl.setAttribute('data-hi', hiMsg);
+    errorEl.textContent = isHindi ? hiMsg : enMsg;
+    errorEl.style.display = 'block';
+    field.setAttribute('aria-invalid', 'true');
+    field.style.borderColor = '#c0392b';
+  }
+
+  function clearError(field, errorEl) {
+    if (!field || !errorEl) return;
+    errorEl.removeAttribute('data-en');
+    errorEl.removeAttribute('data-hi');
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+    field.removeAttribute('aria-invalid');
+    field.style.borderColor = '';
+  }
+
+  function showStatus(htmlEn, htmlHi) {
+    if (!statusEl) return;
+    statusEl.dataset.statusEn = htmlEn;
+    statusEl.dataset.statusHi = htmlHi;
+    const isHindi = document.documentElement.lang === 'hi';
+    statusEl.innerHTML = isHindi ? htmlHi : htmlEn;
+    statusEl.style.display = 'block';
+  }
+
+  function clearStatus() {
+    if (!statusEl) return;
+    delete statusEl.dataset.statusEn;
+    delete statusEl.dataset.statusHi;
+    statusEl.innerHTML = '';
+    statusEl.style.display = 'none';
+  }
+
+  // Update status message on language switch if active
+  if (window.MutationObserver) {
+    const langObserver = new MutationObserver(() => {
+      if (statusEl && statusEl.style.display !== 'none' && statusEl.dataset.statusEn) {
+        const isHindi = document.documentElement.lang === 'hi';
+        statusEl.innerHTML = isHindi ? statusEl.dataset.statusHi : statusEl.dataset.statusEn;
+      }
+    });
+    langObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  }
+
+  function validateIndianPhone(rawValue) {
+    const trimmed = (rawValue || '').trim();
+    if (!trimmed) {
+      return {
+        isValid: false,
+        reason: 'EMPTY',
+        en: 'Please enter your phone number.',
+        hi: 'कृपया अपना फोन नंबर दर्ज करें।'
+      };
+    }
+
+    // Reject alphabetic characters
+    if (/[a-zA-Z]/.test(trimmed)) {
+      return {
+        isValid: false,
+        reason: 'LETTERS',
+        en: 'Phone number cannot contain letters. Please enter a valid Indian mobile number.',
+        hi: 'फोन नंबर में अक्षर नहीं हो सकते। कृपया मान्य भारतीय मोबाइल नंबर दर्ज करें।'
+      };
+    }
+
+    // Allow only digits, optional leading '+', spaces, hyphens, and optional parentheses
+    if (!/^\+?[\d\s\-()]+$/.test(trimmed)) {
+      return {
+        isValid: false,
+        reason: 'INVALID_CHARS',
+        en: 'Please enter a valid 10-digit Indian mobile number.',
+        hi: 'कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें।'
+      };
+    }
+
+    // Remove spaces, hyphens, parentheses
+    let digits = trimmed.replace(/[\s\-()]/g, '');
+
+    // Strip country code (+91 or 91) or leading zero
+    if (digits.startsWith('+91')) {
+      digits = digits.slice(3);
+    } else if (digits.startsWith('91') && digits.length === 12) {
+      digits = digits.slice(2);
+    } else if (digits.startsWith('0') && digits.length === 11) {
+      digits = digits.slice(1);
+    }
+
+    // Must be exactly 10 digits and start with 6, 7, 8, or 9
+    if (!/^[6-9]\d{9}$/.test(digits)) {
+      return {
+        isValid: false,
+        reason: 'INVALID_INDIAN_MOBILE',
+        en: 'Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.',
+        hi: 'कृपया 6, 7, 8 या 9 से शुरू होने वाला 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।'
+      };
+    }
+
+    return {
+      isValid: true,
+      normalized: digits
+    };
+  }
+
+  // Clear a field's error when the user corrects that field
+  if (nameInput) {
+    nameInput.addEventListener('input', () => {
+      if (nameInput.value.trim().length > 0) {
+        clearError(nameInput, nameError);
+      }
+      clearStatus();
+    });
+  }
+
+  if (phoneInput) {
+    phoneInput.addEventListener('input', () => {
+      const phoneRes = validateIndianPhone(phoneInput.value);
+      if (phoneRes.isValid) {
+        clearError(phoneInput, phoneError);
+      }
+      clearStatus();
+    });
+  }
+
+  if (serviceSelect) {
+    const handleServiceChange = () => {
+      if ((serviceSelect.value || '').trim().length > 0) {
+        clearError(serviceSelect, serviceError);
+      }
+      clearStatus();
+    };
+    serviceSelect.addEventListener('change', handleServiceChange);
+    serviceSelect.addEventListener('input', handleServiceChange);
+  }
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const name = form.querySelector('[name="name"]')?.value || '';
-    const phone = form.querySelector('[name="phone"]')?.value || '';
-    const service = form.querySelector('[name="service"]')?.value || '';
-    const location = form.querySelector('[name="location"]')?.value || 'Bharuch';
-    const message = form.querySelector('[name="message"]')?.value || '';
+    clearStatus();
 
-    const text = `*New Interior Enquiry - DEV DECOR Web*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Service Interested In:* ${service}\n*Location:* ${location}\n*Requirements:* ${message}`;
+    let isValid = true;
+    let firstInvalidField = null;
+
+    // 1. Name validation (required, trimmed, reject spaces only)
+    const rawName = nameInput ? nameInput.value : '';
+    const trimmedName = rawName.trim();
+    if (!trimmedName) {
+      isValid = false;
+      showError(nameInput, nameError, 'Please enter your name.', 'कृपया अपना नाम दर्ज करें।');
+      if (!firstInvalidField) firstInvalidField = nameInput;
+    } else {
+      clearError(nameInput, nameError);
+    }
+
+    // 2. Phone validation (required, 10-digit Indian mobile, starts with 6-9)
+    const rawPhone = phoneInput ? phoneInput.value : '';
+    const phoneRes = validateIndianPhone(rawPhone);
+    if (!phoneRes.isValid) {
+      isValid = false;
+      showError(phoneInput, phoneError, phoneRes.en, phoneRes.hi);
+      if (!firstInvalidField) firstInvalidField = phoneInput;
+    } else {
+      clearError(phoneInput, phoneError);
+    }
+
+    // 3. Service validation (required, reject placeholder)
+    const rawService = serviceSelect ? serviceSelect.value : '';
+    const trimmedService = (rawService || '').trim();
+    if (!trimmedService) {
+      isValid = false;
+      showError(serviceSelect, serviceError, 'Please select a service of interest.', 'कृपया इच्छित सेवा का चयन करें।');
+      if (!firstInvalidField) firstInvalidField = serviceSelect;
+    } else {
+      clearError(serviceSelect, serviceError);
+    }
+
+    // Prevent submission and focus first invalid field if validation fails
+    if (!isValid) {
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+      }
+      return;
+    }
+
+    // 4. Optional fields with fallback (trimmed)
+    const rawLocation = locationInput ? locationInput.value : '';
+    const trimmedLocation = rawLocation.trim() || 'Bharuch';
+
+    const rawMessage = messageInput ? messageInput.value : '';
+    const trimmedMessage = rawMessage.trim();
+
+    // 5. Build WhatsApp message and URL
+    const text = `*New Interior Enquiry - DEV DECOR Web*\n\n*Name:* ${trimmedName}\n*Phone:* ${phoneRes.normalized}\n*Service Interested In:* ${trimmedService}\n*Location:* ${trimmedLocation}\n*Requirements:* ${trimmedMessage}`;
     const url = `https://wa.me/919712409158?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+
+    // 6. Open WhatsApp recipient in a new tab with graceful popup handling
+    let openedWindow = null;
+    try {
+      openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      openedWindow = null;
+    }
+
+    const isBlocked = !openedWindow || openedWindow.closed || typeof openedWindow.closed === 'undefined';
+    if (isBlocked) {
+      showStatus(
+        'Pop-up was blocked. <a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">Click here to open WhatsApp ↗</a>',
+        'पॉपअप अवरुद्ध हो गया। <a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">WhatsApp खोलने के लिए यहाँ क्लिक करें ↗</a>'
+      );
+    } else {
+      showStatus(
+        'Opening WhatsApp... If it did not open automatically, <a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">click here ↗</a>.',
+        'WhatsApp खोला जा रहा है... यदि यह स्वचालित रूप से नहीं खुला, तो <a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">यहाँ क्लिक करें ↗</a>।'
+      );
+    }
   });
 }
 

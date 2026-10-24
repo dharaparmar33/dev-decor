@@ -823,7 +823,6 @@ section {
   height: 290px;
   overflow: hidden;
   background: #E7DFD4;
-  cursor: pointer;
 }
 
 .project-card-media img {
@@ -923,107 +922,6 @@ section {
 
 .project-card-action a:hover {
   color: var(--gold);
-}
-
-/* Lightbox Modal */
-.lightbox-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(20, 15, 13, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 30px 20px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.lightbox-modal.is-active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.lightbox-content {
-  background: var(--ivory);
-  border: 1px solid var(--border-gold);
-  border-radius: var(--radius-sm);
-  max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-}
-
-.lightbox-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 36px;
-  height: 36px;
-  background: var(--walnut);
-  color: #FFFFFF;
-  border: 1px solid var(--gold);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 1.25rem;
-  cursor: pointer;
-  z-index: 10;
-  transition: var(--transition);
-}
-
-.lightbox-close:hover {
-  background: var(--charcoal);
-  transform: rotate(90deg);
-}
-
-.lightbox-image-wrap {
-  background: #1C1C1C;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 380px;
-}
-
-.lightbox-image-wrap img {
-  width: 100%;
-  height: 100%;
-  max-height: 520px;
-  object-fit: contain;
-}
-
-.lightbox-details {
-  padding: 32px 28px;
-  display: flex;
-  flex-direction: column;
-}
-
-.lightbox-details .eyebrow {
-  margin-bottom: 8px;
-}
-
-.lightbox-details h3 {
-  font-size: 1.55rem;
-  margin-bottom: 14px;
-}
-
-.lightbox-details p {
-  font-size: 0.95rem;
-  line-height: 1.7;
-  margin-bottom: 24px;
-}
-
-.lightbox-actions {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 /* About Grid & Story */
@@ -1553,14 +1451,6 @@ footer.site-footer {
   .footer-main {
     grid-template-columns: repeat(2, 1fr);
     gap: 36px;
-  }
-
-  .lightbox-content {
-    grid-template-columns: 1fr;
-  }
-
-  .lightbox-image-wrap {
-    min-height: 300px;
   }
 }
 

@@ -162,20 +162,22 @@
               Fill in your project details below to automatically draft a WhatsApp inquiry directly to DEV DECOR.
             </p>
 
-            <form id="consultationForm" style="margin-top: 24px;">
+            <form id="consultationForm" novalidate style="margin-top: 24px;">
               <div class="form-group">
                 <label for="name" data-en="Your Name *" data-hi="आपका नाम *">Your Name *</label>
-                <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Rajesh Patel" required data-en="e.g. Rajesh Patel" data-hi="उदा. राजेश पटेल">
+                <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Rajesh Patel" required data-en="e.g. Rajesh Patel" data-hi="उदा. राजेश पटेल" aria-describedby="nameError">
+                <div id="nameError" class="field-error" role="alert" aria-live="polite" style="display:none; color:#c0392b; font-size:0.82rem; margin-top:6px; font-weight:500;"></div>
               </div>
 
               <div class="form-group">
                 <label for="phone" data-en="Phone Number *" data-hi="फोन नंबर *">Phone Number *</label>
-                <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. 9876543210" required data-en="e.g. 9876543210" data-hi="उदा. 9876543210">
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. 9876543210" required data-en="e.g. 9876543210" data-hi="उदा. 9876543210" aria-describedby="phoneError">
+                <div id="phoneError" class="field-error" role="alert" aria-live="polite" style="display:none; color:#c0392b; font-size:0.82rem; margin-top:6px; font-weight:500;"></div>
               </div>
 
               <div class="form-group">
                 <label for="service" data-en="Service of Interest *" data-hi="इच्छित सेवा *">Service of Interest *</label>
-                <select id="service" name="service" class="form-control" required>
+                <select id="service" name="service" class="form-control" required aria-describedby="serviceError">
                   <option value="" disabled selected data-en="Select a Service" data-hi="सेवा का चयन करें">Select a Service</option>
                   <option value="Modular Kitchen Design" data-en="Modular Kitchen Design" data-hi="मॉड्यूलर किचन डिज़ाइन">Modular Kitchen Design</option>
                   <option value="Custom Wardrobe & Closet" data-en="Custom Wardrobe & Closet" data-hi="कस्टम वार्डरोब">Custom Wardrobe & Closet</option>
@@ -185,6 +187,7 @@
                   <option value="Main Entrance Door & Partitions" data-en="Main Entrance Door & Partitions" data-hi="मुख्य दरवाजा व पार्टीशन">Main Entrance Door & Partitions</option>
                   <option value="Full Home Interior Renovation" data-en="Full Home Interior Renovation" data-hi="संपूर्ण घर का इंटीरियर">Full Home Interior Renovation</option>
                 </select>
+                <div id="serviceError" class="field-error" role="alert" aria-live="polite" style="display:none; color:#c0392b; font-size:0.82rem; margin-top:6px; font-weight:500;"></div>
               </div>
 
               <div class="form-group">
@@ -196,6 +199,8 @@
                 <label for="message" data-en="Brief Requirements / Room Dimensions" data-hi="कमरे का माप या विवरण">Brief Requirements / Room Dimensions</label>
                 <textarea id="message" name="message" class="form-control" placeholder="Share room size, preferred colors, or estimated timeline..." data-en="Share room size, preferred colors, or estimated timeline..." data-hi="कमरे का आकार, पसंदीदा रंग या समय-सीमा साझा करें..."></textarea>
               </div>
+
+              <div id="formStatus" role="status" aria-live="polite" style="display:none; margin-bottom:14px; font-size:0.88rem; padding:10px 14px; border-radius:4px; background:#F1ECE2; border:1px solid #B08D57; color:#4A3027;"></div>
 
               <button type="submit" class="btn btn-gold" style="width:100%; padding:14px;" data-en="Send Inquiry via WhatsApp ↗" data-hi="WhatsApp के ज़रिए भेजें ↗">
                 Send Inquiry via WhatsApp ↗
