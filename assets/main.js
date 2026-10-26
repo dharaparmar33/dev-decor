@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initStickyHeader();
   initScrollReveal();
   initGalleryFiltering();
+  initLightboxModal();
+  initVideoModal();
   initFaqAccordion();
   initContactForm();
   initDynamicYear();
@@ -511,6 +513,264 @@ function initActiveNavLink() {
     const href = link.getAttribute('href');
     if (href === currentPath || (currentPath === '' && href === 'index.html')) {
       link.classList.add('active');
+    }
+  });
+}
+
+
+/* -------------------------------------------------------------
+ * 11. Project Lightbox Modal Dialog Controller
+ * ------------------------------------------------------------- */
+function initLightboxModal() {
+  const modal = document.getElementById('imageLightboxModal');
+  if (!modal) return;
+
+  const mainImg = document.getElementById('lightboxMainImg');
+  const projectTitle = document.getElementById('lightboxProjectTitle');
+  const projectCat = document.getElementById('lightboxProjectCat');
+  const photoCounter = document.getElementById('photoCounter');
+  const inquireBtn = document.getElementById('lightboxInquireBtn');
+  const thumbsList = document.getElementById('modalThumbsList');
+  const closeBtn = document.getElementById('closeLightboxBtn');
+  const prevBtn = document.getElementById('prevPhotoBtn');
+  const nextBtn = document.getElementById('nextPhotoBtn');
+
+  let currentPhotos = [];
+  let currentIndex = 0;
+  let lastFocusedElement = null;
+
+  function updateModalView() {
+    if (!currentPhotos.length) return;
+    const currentSrc = currentPhotos[currentIndex];
+    mainImg.src = currentSrc;
+    photoCounter.textContent = `${currentIndex + 1} / ${currentPhotos.length}`;
+
+    // Hide or show nav buttons if single photo
+    if (currentPhotos.length <= 1) {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      photoCounter.style.display = 'none';
+      thumbsList.style.display = 'none';
+    } else {
+      prevBtn.style.display = 'flex';
+      nextBtn.style.display = 'flex';
+      photoCounter.style.display = 'block';
+      thumbsList.style.display = 'flex';
+    }
+
+    // Update active thumbnail
+    const thumbBtns = thumbsList.querySelectorAll('.modal-thumb-btn');
+    thumbBtns.forEach((btn, idx) => {
+      btn.classList.toggle('is-active', idx === currentIndex);
+      btn.setAttribute('aria-current', idx === currentIndex ? 'true' : 'false');
+    });
+  }
+
+  function openLightbox(photos, startIndex, titleEn, titleHi, catEn, catHi) {
+    currentPhotos = photos;
+    currentIndex = startIndex || 0;
+    lastFocusedElement = document.activeElement;
+
+    const isHindi = document.documentElement.lang === 'hi';
+    const displayTitle = isHindi && titleHi ? titleHi : titleEn;
+    const displayCat = isHindi && catHi ? catHi : catEn;
+
+    projectTitle.textContent = displayTitle;
+    projectTitle.setAttribute('data-en', titleEn);
+    projectTitle.setAttribute('data-hi', titleHi || titleEn);
+
+    projectCat.textContent = displayCat;
+    projectCat.setAttribute('data-en', catEn);
+    projectCat.setAttribute('data-hi', catHi || catEn);
+
+    // Build WhatsApp inquiry URL
+    const waText = `Hello DEV DECOR! I am interested in your project: ${titleEn} (${catEn}). Could you please share more details and estimated pricing?`;
+    inquireBtn.href = `https://wa.me/919712409158?text=${encodeURIComponent(waText)}`;
+
+    // Render thumbnails
+    thumbsList.innerHTML = '';
+    if (currentPhotos.length > 1) {
+      currentPhotos.forEach((src, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `modal-thumb-btn ${idx === currentIndex ? 'is-active' : ''}`;
+        btn.setAttribute('aria-label', `View photo ${idx + 1}`);
+        btn.innerHTML = `<img src="${src}" alt="Thumbnail ${idx + 1}" loading="lazy">`;
+        btn.addEventListener('click', () => {
+          currentIndex = idx;
+          updateModalView();
+        });
+        thumbsList.appendChild(btn);
+      });
+    }
+
+    updateModalView();
+    modal.classList.add('is-active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function closeLightbox() {
+    modal.classList.remove('is-active');
+    modal.setAttribute('aria-hidden', 'true');
+    mainImg.src = '';
+    document.body.style.overflow = '';
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+      lastFocusedElement.focus();
+    }
+  }
+
+  function prevPhoto() {
+    if (currentPhotos.length <= 1) return;
+    currentIndex = (currentIndex - 1 + currentPhotos.length) % currentPhotos.length;
+    updateModalView();
+  }
+
+  function nextPhoto() {
+    if (currentPhotos.length <= 1) return;
+    currentIndex = (currentIndex + 1) % currentPhotos.length;
+    updateModalView();
+  }
+
+  // Bind project cards
+  const projectCards = document.querySelectorAll('.project-card');
+  projectCards.forEach(card => {
+    const media = card.querySelector('.project-card-media');
+    if (!media) return;
+
+    function handleCardClick() {
+      const rawGallery = media.getAttribute('data-gallery');
+      const img = media.querySelector('img');
+      const photos = rawGallery ? rawGallery.split(',').map(s => s.trim()) : [img.getAttribute('src')];
+      
+      const titleEl = card.querySelector('.project-card-body h3');
+      const badgeEl = card.querySelector('.project-badge');
+
+      const titleEn = media.getAttribute('data-title-en') || (titleEl ? titleEl.getAttribute('data-en') || titleEl.textContent : 'DEV DECOR Project');
+      const titleHi = media.getAttribute('data-title-hi') || (titleEl ? titleEl.getAttribute('data-hi') || titleEl.textContent : titleEn);
+      const catEn = media.getAttribute('data-cat-en') || (badgeEl ? badgeEl.getAttribute('data-en') || badgeEl.textContent : 'Interior Design');
+      const catHi = media.getAttribute('data-cat-hi') || (badgeEl ? badgeEl.getAttribute('data-hi') || badgeEl.textContent : catEn);
+
+      openLightbox(photos, 0, titleEn, titleHi, catEn, catHi);
+    }
+
+    media.addEventListener('click', handleCardClick);
+    media.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCardClick();
+      }
+    });
+  });
+
+  // Modal navigation events
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', prevPhoto);
+  nextBtn.addEventListener('click', nextPhoto);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeLightbox();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('is-active')) return;
+    if (e.key === 'Escape') {
+      closeLightbox();
+    } else if (e.key === 'ArrowLeft') {
+      prevPhoto();
+    } else if (e.key === 'ArrowRight') {
+      nextPhoto();
+    }
+  });
+
+  // Mobile Touch Swipe Navigation
+  let touchStartX = 0;
+  let touchEndX = 0;
+  modal.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  modal.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    if (touchEndX < touchStartX - 45) {
+      nextPhoto();
+    } else if (touchEndX > touchStartX + 45) {
+      prevPhoto();
+    }
+  }, { passive: true });
+}
+
+/* -------------------------------------------------------------
+ * 12. 60-Second Walkthrough Video Modal Controller
+ * ------------------------------------------------------------- */
+function initVideoModal() {
+  const modal = document.getElementById('walkthroughVideoModal');
+  if (!modal) return;
+
+  const player = document.getElementById('walkthroughVideoPlayer');
+  const closeBtn = document.getElementById('closeVideoModalBtn');
+  let lastFocusedElement = null;
+
+  const triggers = document.querySelectorAll(
+    '#openHeroWalkthrough, #playProjectsWalkthrough, #posterProjectsTrigger, .btn-open-walkthrough'
+  );
+
+  function openVideo() {
+    lastFocusedElement = document.activeElement;
+    modal.classList.add('is-active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+
+    if (player) {
+      player.currentTime = 0;
+      const playPromise = player.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play was prevented by browser policy; user can tap native controls
+        });
+      }
+    }
+  }
+
+  function closeVideo() {
+    modal.classList.remove('is-active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (player) {
+      player.pause();
+      player.currentTime = 0;
+    }
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+      lastFocusedElement.focus();
+    }
+  }
+
+  triggers.forEach(trig => {
+    trig.addEventListener('click', openVideo);
+    trig.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openVideo();
+      }
+    });
+  });
+
+  closeBtn.addEventListener('click', closeVideo);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeVideo();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('is-active')) return;
+    if (e.key === 'Escape') {
+      closeVideo();
     }
   });
 }

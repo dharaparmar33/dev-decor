@@ -98,7 +98,11 @@
           <div class="tagline">Your Space. Your Style. Our Craft.</div>
           
           <div class="hero-actions">
-            <a class="btn btn-primary" href="projects.html" data-en="Explore 45+ Projects →" data-hi="45+ प्रोजेक्ट्स देखें →">Explore 45+ Projects →</a>
+            <a class="btn btn-primary" href="projects.html" data-en="Explore 65+ Projects →" data-hi="65+ प्रोजेक्ट्स देखें →">Explore 65+ Projects →</a>
+            <button type="button" class="btn btn-gold btn-hero-walkthrough" id="openHeroWalkthrough" aria-label="Watch 60-second home walkthrough video">
+              <span class="play-icon" aria-hidden="true">▶</span>
+              <span data-en="Watch 60s Home Tour" data-hi="60s वीडियो टूर">Watch 60s Home Tour</span>
+            </button>
             <a class="btn btn-whatsapp" href="https://wa.me/919712409158" target="_blank" rel="noopener" data-en="WhatsApp Consultation ↗" data-hi="WhatsApp पर परामर्श लें ↗">WhatsApp Consultation ↗</a>
           </div>
 
@@ -113,8 +117,8 @@
             <img src="assets/devdecor-project-12.webp" alt="Modern modular kitchen design with mint cabinetry and quartz countertop by DEV DECOR in Bharuch" width="736" height="981">
           </div>
           <div class="hero-floating-card">
-            <strong data-en="45+ Completed Projects" data-hi="45+ पूर्ण प्रोजेक्ट्स">45+ Completed Projects</strong>
-            <span data-en="Kitchens • Wardrobes • Temples • Living" data-hi="किचन • वार्डरोब • मंदिर • लिविंग">Kitchens • Wardrobes • Temples • Living</span>
+            <strong data-en="65+ Completed Projects" data-hi="65+ पूर्ण प्रोजेक्ट्स">65+ Completed Projects</strong>
+            <span data-en="Doors • Kitchens • Wardrobes • Temples • Living" data-hi="दरवाजे • किचन • वार्डरोब • मंदिर • लिविंग">Doors • Kitchens • Wardrobes • Temples • Living</span>
           </div>
         </div>
       </div>
@@ -508,6 +512,26 @@
         </div>
       </div>
     </section>
+      <!-- Accessible 60-Second Video Walkthrough Modal -->
+    <div id="walkthroughVideoModal" class="app-modal" role="dialog" aria-modal="true" aria-label="60-Second Full-Home Walkthrough Video" aria-hidden="true">
+      <div class="modal-dialog modal-video-dialog">
+        <button type="button" class="modal-close-btn" id="closeVideoModalBtn" aria-label="Close walkthrough video">&times;</button>
+        <div class="modal-video-container">
+          <video id="walkthroughVideoPlayer" controls playsinline preload="metadata" poster="assets/portfolio/video-walkthrough-poster.webp">
+            <source src="assets/videos/devdecor-walkthrough-60s.mp4" type="video/mp4">
+            <p>Your browser does not support HTML5 video.</p>
+          </video>
+        </div>
+        <div class="modal-video-footer">
+          <div>
+            <span data-en="DEV DECOR Residence Walkthrough" data-hi="देव डेकोर आवासीय वॉकथ्रू">DEV DECOR Residence Walkthrough</span>
+            <small style="display:block; color:#9E9188; font-size:0.75rem;">Bharuch, Gujarat • 60 Seconds</small>
+          </div>
+          <a href="https://wa.me/919712409158?text=Hello%20DEV%20DECOR!%20I%20watched%20your%2060-second%20home%20walkthrough%20video%20and%20would%20like%20to%20discuss%20a%20similar%20interior%20project." target="_blank" rel="noopener" class="btn btn-whatsapp" style="padding: 6px 14px; font-size: 0.82rem;" data-en="Chat on WhatsApp ↗" data-hi="WhatsApp चैट ↗">Chat on WhatsApp ↗</a>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Site Footer -->
