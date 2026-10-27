@@ -525,6 +525,7 @@ function initLightboxModal() {
   const modal = document.getElementById('imageLightboxModal');
   if (!modal) return;
 
+  const dialog = modal.querySelector('.modal-dialog');
   const mainImg = document.getElementById('lightboxMainImg');
   const projectTitle = document.getElementById('lightboxProjectTitle');
   const projectCat = document.getElementById('lightboxProjectCat');
@@ -539,11 +540,54 @@ function initLightboxModal() {
   let currentIndex = 0;
   let lastFocusedElement = null;
 
+  function adaptDialogToImage() {
+    if (!dialog || !mainImg) return;
+    const nw = mainImg.naturalWidth;
+    const nh = mainImg.naturalHeight;
+    if (!nw || !nh) return;
+
+    const ratio = nw / nh;
+    const vh = window.innerHeight || 800;
+    const vw = window.innerWidth || 1200;
+
+    if (ratio < 0.85) {
+      // Portrait image (e.g. entrance doors, wardrobes ~9:16 or 3:4)
+      const maxImgH = Math.min(vh * 0.74, 740);
+      const idealImgW = maxImgH * ratio;
+      // Frame snugly: width fits rendered image + 32px padding, minimum 380px for caption readability
+      const targetW = Math.max(380, Math.min(Math.round(idealImgW + 36), Math.round(vw * 0.94)));
+      dialog.style.maxWidth = `${targetW}px`;
+      dialog.classList.add('is-portrait');
+      dialog.classList.remove('is-landscape');
+    } else if (ratio > 1.25) {
+      // Generous landscape image (e.g. living rooms, kitchens, tv units ~16:9 or 3:2)
+      const maxImgH = Math.min(vh * 0.70, 680);
+      const idealImgW = maxImgH * ratio;
+      const targetW = Math.max(760, Math.min(Math.round(idealImgW + 40), Math.round(vw * 0.94), 1100));
+      dialog.style.maxWidth = `${targetW}px`;
+      dialog.classList.add('is-landscape');
+      dialog.classList.remove('is-portrait');
+    } else {
+      // Near-square / standard image (0.85 - 1.25)
+      const maxImgH = Math.min(vh * 0.70, 680);
+      const idealImgW = maxImgH * ratio;
+      const targetW = Math.max(520, Math.min(Math.round(idealImgW + 48), Math.round(vw * 0.94), 860));
+      dialog.style.maxWidth = `${targetW}px`;
+      dialog.classList.remove('is-portrait', 'is-landscape');
+    }
+  }
+
   function updateModalView() {
     if (!currentPhotos.length) return;
     const currentSrc = currentPhotos[currentIndex];
     mainImg.src = currentSrc;
     photoCounter.textContent = `${currentIndex + 1} / ${currentPhotos.length}`;
+
+    if (mainImg.complete && mainImg.naturalWidth > 0) {
+      adaptDialogToImage();
+    } else {
+      mainImg.onload = adaptDialogToImage;
+    }
 
     // Hide or show nav buttons if single photo
     if (currentPhotos.length <= 1) {
@@ -609,17 +653,28 @@ function initLightboxModal() {
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     closeBtn.focus();
+    requestAnimationFrame(adaptDialogToImage);
   }
 
   function closeLightbox() {
     modal.classList.remove('is-active');
     modal.setAttribute('aria-hidden', 'true');
     mainImg.src = '';
+    if (dialog) {
+      dialog.style.maxWidth = '';
+      dialog.classList.remove('is-portrait', 'is-landscape');
+    }
     document.body.style.overflow = '';
     if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
       lastFocusedElement.focus();
     }
   }
+
+  window.addEventListener('resize', () => {
+    if (modal.classList.contains('is-active')) {
+      adaptDialogToImage();
+    }
+  });
 
   function prevPhoto() {
     if (currentPhotos.length <= 1) return;
